@@ -1,0 +1,114 @@
+ url=https://github.com/newiziwavez33-hub/libraryai/blob/main/load-russian-books.patch
+*** Begin Patch
+*** Update File: script.js
+@@
+-    loadBooks('subject:fiction'); // загрузка топ-книг (русские)
++    // Загрузка случайных 12 русскоязычных книг при старте
++    try {
++      if (typeof loadRandomRussianBooks === 'function') {
++        loadRandomRussianBooks();
++      } else {
++        loadBooks('subject:fiction'); // fallback
++      }
++    } catch(e) {
++      console.warn('startup loadRandomRussianBooks failed, fallback to loadBooks', e);
++      loadBooks('subject:fiction');
++    }
+@@
+ })();
+ 
++// === PATCH: loadRandomRussianBooks ===
++// На главной странице при загрузке показываем 12 случайных книг только на русском
++(function(){
++  async function loadRandomRussianBooks() {
++    try {
++      incLoader();
++      showLoader(true);
++
++      // Собираем большой набор результатов (maxResults 40) по популярным темам и случайно выбираем 12
++      const topics = ['роман','русская литература','бестселлер','повесть','детектив','фантастика','поэзия','проза'];
++      const all = [];
++
++      for (const t of topics) {
++        try {
++          const url = buildGoogleBooksUrl({ q: t, startIndex: 0, maxResults: 20, langRestrict: 'ru' });
++          const res = await fetch(url);
++          if (!res.ok) continue;
++          const data = await res.json();
++          const items = Array.isArray(data.items) ? data.items : [];
++          for (const it of items) {
++            // фильтруем только русские по полю language или по наличию кириллицы
++            const vi = it.volumeInfo || {};
++            const lang = (vi.language || '').toLowerCase();
++            const text = `${vi.title||''} ${vi.subtitle||''} ${(vi.authors||[]).join(' ')} ${vi.description||''}`;
++            const hasCyr = /[а-яё]/i.test(text);
++            if (lang === 'ru' || hasCyr) {
++              all.push(it);
++            }
++          }
++        } catch (e) {
++          console.warn('loadRandomRussianBooks fetch error for topic', t, e);
++        }
++      }
++
++      // unique by id
++      const seen = new Set();
++      const unique = all.filter(it => {
++        const id = (it.id || (it.volumeInfo && it.volumeInfo.title) || Math.random()).toString();
++        if (seen.has(id)) return false; seen.add(id); return true;
++      });
++
++      if (!unique.length) {
++        // fallback to default loader
++        await loadBooks('subject:fiction');
++        return;
++      }
++
++      // shuffle and take 12
++      for (let i = unique.length - 1; i > 0; i--) {
++        const j = Math.floor(Math.random() * (i + 1));
++        [unique[i], unique[j]] = [unique[j], unique[i]];
++      }
++
++      const take = unique.slice(0, 12).map(googleItemToDoc);
++
++      // Переводим, если нужно (как в loadBooks)
++      const processed = [];
++      for (const d of take) {
++        const vi = d._rawVolume?.volumeInfo || {};
++        const lang = (vi.language || '').toLowerCase();
++        const title = d.title || '';
++        const desc = d.description || '';
++        const authors = Array.isArray(d.author_name) ? d.author_name.join(', ') : (d.author_name || '');
++        const containsRussian = /[а-яё]/i.test(title + desc + authors);
++
++        if (lang !== 'ru' || !containsRussian) {
++          try {
++            const [titleRu, descRu, authorsRu] = await Promise.all([
++              translateToRussianCached(title),
++              translateToRussianCached(desc),
++              translateToRussianCached(authors)
++            ]);
++            d.title = titleRu || d.title;
++            d.description = descRu || d.description;
++            d.author_name = (authorsRu || authors).split(',').map(a => a.trim());
++          } catch (trErr) { console.warn('translate fallback failed', trErr); }
++        }
++        processed.push(d);
++      }
++
++      renderBooks(processed);
++    } catch (e) {
++      console.error('loadRandomRussianBooks error', e);
++      // fallback
++      try { await loadBooks('subject:fiction'); } catch(e2){}
++    } finally {
++      try { decLoader(); } catch(e){}
++      showLoader(false);
++    }
++  }
++
++  // expose for testing
++  window.loadRandomRussianBooks = loadRandomRussianBooks;
++})();
+*** End Patch

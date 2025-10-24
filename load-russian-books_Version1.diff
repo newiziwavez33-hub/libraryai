@@ -1,0 +1,31 @@
+ url=https://github.com/newiziwavez33-hub/libraryai/blob/main/load-russian-books.diff
+*** Begin Patch
+*** Update File: script.js
+@@
+-    updateFavCounter();
+-    renderFavoritesList();
+-    loadTopAuthors();
+-    loadBooks('subject:fiction'); // загрузка топ-книг (русские)
+-    // приветствие при загрузке отключено по требованию
+-    // try { showWelcomePopup(); } catch (e) { /* ignore */ }
+-    try { initLoaderAnimation(); } catch(e) {}
+-    startDianaTips();
++    updateFavCounter();
++    renderFavoritesList();
++    loadTopAuthors();
++    // Загрузка случайных 12 русскоязычных книг при старте
++    try {
++      if (typeof loadRandomRussianBooks === 'function') {
++        loadRandomRussianBooks();
++      } else {
++        loadBooks('subject:fiction'); // fallback
++      }
++    } catch(e) {
++      console.warn('startup loadRandomRussianBooks failed, fallback to loadBooks', e);
++      loadBooks('subject:fiction');
++    }
++    // приветствие при загрузке отключено по требованию
++    // try { showWelcomePopup(); } catch (e) { /* ignore */ }
++    try { initLoaderAnimation(); } catch(e) {}
++    startDianaTips();
+*** End Patch
