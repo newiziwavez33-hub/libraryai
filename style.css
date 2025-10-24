@@ -1,0 +1,901 @@
+/* Общие стили */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f6f8fb;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Блоки */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    /* Максимальная ширина для больших экранов */
+    margin: 0 auto;
+}
+
+#isbnPopup video {
+  object-fit: cover;       /* сохраняет пропорции видео */
+}
+
+#isbnPopup .flex-col > div:nth-child(2) {
+  flex-shrink: 0;           /* видео не сжимается, кнопки остаются видны */
+}
+
+#isbnPopup .flex-col > div:nth-child(3) {
+  flex-shrink: 0;
+}
+
+//* Сетка карточек */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+
+/* Карточка книги */
+.book-card {
+    width: 280px;
+    min-height: 390px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #fff;
+    border-radius: 16px;
+    /* полукруглые углы */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s, transform 0.2s;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Градиентная полоса сверху карточки */
+.book-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(45deg, #8b5cf6, #6366f1);
+}
+
+/* Наведение на карточку */
+.book-card:hover {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+}
+
+/* Обложка книги */
+.book-card img {
+    width: 110px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 16px auto 0 auto;
+    display: block;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+/* Название книги */
+.book-card .book-title {
+    color: #111827;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 8px;
+    padding: 0 6px;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Автор книги (только один) */
+.book-card .book-author {
+    color: #7c3aed;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 2px;
+    padding: 0 6px;
+    max-height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Блок кнопок */
+.book-card .book-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: auto;
+    margin-bottom: 12px;
+}
+
+/* Миниатюрные badge-кнопки в карточках */
+/* Миниатюрные badge-кнопки в карточках */
+.book-card .book-actions button {
+    padding: 2px 4px !important;
+    /* уменьшили в 2 раза, форсируем */
+    font-size: 0.6rem !important;
+    /* уменьшили шрифт */
+    border-radius: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Кнопка "В избранное" */
+.book-card .addFav {
+    background-color: #8b5cf6 !important;
+    color: #fff !important;
+}
+
+/* Наведение на кнопку "В избранное" */
+.book-card .addFav:hover {
+    background-color: #7c3aed !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Кнопка "Подробнее" */
+.book-card .moreInfo {
+    background-color: #e5e7eb !important;
+    color: #111827 !important;
+}
+
+/* Наведение на кнопку "Подробнее" */
+.book-card .moreInfo:hover {
+    background-color: #d1d5db !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Общие плоские кнопки для других элементов */
+.btn {
+    background-color: #2d2b77;
+    color: white;
+    border-radius: 12px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.1s;
+    cursor: pointer;
+    border: none;
+}
+
+/* Наведение на плоскую кнопку */
+.btn:hover {
+    background-color: #3c39a5;
+    transform: translateY(-1px);
+}
+
+.chat-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #b8b8ff #f1f1f1;
+}
+
+.chat-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: #b8b8ff;
+    border-radius: 6px;
+}
+
+.chat-animate {
+    animation: openChat .4s ease-out forwards;
+}
+
+.author-card {
+    width: 240px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 10px;
+}
+
+.author-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.author-card img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #8b5cf6;
+    margin-bottom: 10px;
+}
+
+.author-name {
+    font-weight: 600;
+    color: #111827;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.author-genre {
+    font-size: 0.85rem;
+    color: #7c3aed;
+    text-align: center;
+}
+
+.author-card {
+    position: relative;
+}
+
+.like-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease;
+}
+
+.like-btn:hover {
+    transform: scale(1.2);
+}
+
+.like-btn.liked {
+    color: #e11d48;
+}
+
+#topAuthors {
+    transition: opacity 0.3s ease;
+}
+
+
+
+@keyframes openChat {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#favoritesPopup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#favoritesPopup.hidden {
+    display: none;
+}
+
+#favoritesPopup .popup-inner {
+    transform: scale(0);
+    transition: transform 0.2s ease-out;
+}
+
+#favoritesPopup .popup-inner.active {
+    transform: scale(1);
+}
+
+/* ==================== */
+/*   Глобальные Попапы  */
+/* ==================== */
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+.popup-content {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content button.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    font-size: 24px;
+    color: #444;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+}
+
+#booksContainer {
+    position: relative;
+    z-index: 1;
+    /* ниже попапов */
+}
+
+/* ---------- ЛОАДЕР ДИАНЫ ---------- */
+#loadingOverlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    flex-direction: column;
+}
+
+#loadingOverlay.hidden {
+    display: none;
+}
+
+/* Круглая аватарка Дианы с вращением */
+.diana-loader {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-image: url('dianaload.jpg');
+    background-size: cover;
+    background-position: center;
+    animation: rotate 3s linear infinite;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    margin-bottom: 1rem;
+}
+
+/* Надпись под аватаркой */
+#loadingOverlay span {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Анимация вращения */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- МЕДИАЗАПРОСЫ ---------- */
+
+/* Для мобильных устройств (ширина экрана до 640px) */
+@media (max-width: 640px) {
+
+    /* Шапка */
+    header {
+        width: 100%;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
+
+    header .container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    #favoritesMenu {
+        margin-top: 1rem;
+        font-size: 1rem;
+    }
+
+    /* Поиск */
+    .flex.items-center {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    #authorInput {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    #searchBtn {
+        width: 100%;
+    }
+
+    /* Сетка книг */
+    #bookGrid {
+        grid-template-columns: 1fr;
+        /* Одна колонка на мобильных */
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .book-card {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .book-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    /* Пагинация */
+    #pagination {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    /* === Telegram-style Chat === */
+    #chatWindow {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 420px;
+        height: 550px;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 9999;
+        transition: all 0.3s ease-in-out;
+        font-family: "Inter", system-ui, sans-serif;
+    }
+
+    #chatHeader {
+        background: linear-gradient(90deg, #0088cc, #4fa3d1);
+        color: white;
+        padding: 12px 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #chatHeader img {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    #chatHeader .chat-close-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.4rem;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    #chatHeader .chat-close-btn:hover {
+        opacity: 0.8;
+    }
+
+    /* Область сообщений */
+    #chatLog {
+        flex-grow: 1;
+        padding: 16px;
+        overflow-y: auto;
+        background: #e9edf2;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        scroll-behavior: smooth;
+    }
+
+    /* Сообщения пользователя */
+    .msg.user {
+        align-self: flex-end;
+        background: #0088cc;
+        color: white;
+        padding: 10px 14px;
+        border-radius: 16px 16px 4px 16px;
+        max-width: 80%;
+        font-size: 0.95rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Сообщения Дианы */
+    .msg.ai {
+        align-self: flex-start;
+        background: #ffffff;
+        color: #333;
+        padding: 10px 14px;
+        border-radius: 16px 16px 16px 4px;
+        max-width: 80%;
+        font-size: 0.95rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    /* Аватар Дианы */
+    .msg.ai::before {
+        content: "";
+        background-image: url("dainaload.jpg");
+        background-size: cover;
+        background-position: center;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Поле ввода */
+    #chatInputContainer {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-top: 1px solid #dcdcdc;
+        background: #f9f9f9;
+    }
+
+    #chatInput {
+        flex-grow: 1;
+        border: 1px solid #d0d0d0;
+        border-radius: 20px;
+        padding: 10px 14px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border 0.2s;
+    }
+
+    #chatInput:focus {
+        border-color: #0088cc;
+    }
+
+    #sendBtn {
+        background: #0088cc;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin-left: 8px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+
+    #sendBtn:hover {
+        background: #007ab8;
+    }
+
+    /* Анимация появления */
+    #chatWindow.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    #chatWindow.hidden {
+        transform: translateY(30px);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+
+    @keyframes slideIn {
+        0% {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .animate-slideIn {
+        animation: slideIn 0.5s ease-out;
+    }
+
+
+    /* Приветствие */
+    #greeting {
+        padding: 1.5rem;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    /* Попап избранного */
+    #favoritesPopup {
+        width: 90%;
+    }
+
+    /* Кнопки избранного и рекомендаций */
+    #favoritesMenu,
+    #recommendationsMenu {
+        font-size: 1rem;
+        margin-top: 1rem;
+        width: 100%;
+    }
+}
+
+/* Для планшетов (ширина экрана от 641px до 1024px) */
+@media (max-width: 1024px) {
+    header {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    header .container {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0 1rem;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    #favoritesMenu {
+        font-size: 1rem;
+    }
+
+    .flex.items-center {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #searchBtn {
+        width: auto;
+    }
+
+    /* Сетка книг */
+    #bookGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .book-card {
+        width: 48%;
+        margin-bottom: 1rem;
+    }
+
+    .book-card img {
+        width: 100%;
+        height: 180px;
+    }
+
+    /* Пагинация */
+    #pagination {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* Прозрачное появление */
+    #loadingOverlay {
+        transition: opacity 0.5s ease;
+        opacity: 0;
+    }
+
+    #loadingOverlay.flex {
+        opacity: 1;
+    }
+
+    /* Попап приветствия */
+    #welcomePopup {
+        transition: opacity 0.5s ease;
+    }
+
+    #welcomePopup>div {
+        transform: scale(0.9);
+        transition: transform 0.5s ease;
+    }
+
+    #welcomePopup.opacity-100>div {
+        transform: scale(1);
+    }
+
+    /* Вращение аватарки Дианы в лоадере и попапе */
+    .diana-loader,
+    #welcomePopup img {
+        animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Лупа для полноэкранного попапа поиска */
+    .loader-lupa {
+        border: 4px solid white;
+        /* Основной цвет */
+        border-top-color: transparent;
+        /* Прозрачная верхняя часть для эффекта вращения */
+        border-radius: 50%;
+        width: 64px;
+        height: 64px;
+        animation: spin-lupa 1.2s linear infinite;
+    }
+
+    /* Анимация вращения */
+    @keyframes spin-lupa {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* --- Адаптивность для мобильных устройств --- */
+    @media (max-width: 640px) {
+
+        /* Шапка */
+        header,
+        footer {
+            width: 100%;
+            padding: 1rem;
+        }
+
+        header .flex,
+        nav,
+        .flex.items-center {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        nav button {
+            margin-top: 0.5rem;
+        }
+
+        /* Поиск */
+        #authorInput,
+        #searchBtn,
+        #clearBtn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Сетка книг */
+        #bookGrid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .book-card {
+            width: 100%;
+            padding: 1rem;
+            height: auto;
+        }
+
+        .book-card img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+
+        /* Попапы */
+        #favoritesPopup,
+        #recommendationsPopup,
+        #chatWindow {
+            width: 90%;
+            max-width: none;
+            left: 5%;
+            right: 5%;
+        }
+
+        /* Крестик в чате */
+        #chatWindow .close-chat {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #555;
+        }
+
+        #chatMessages {
+            font-size: 0.9rem;
+        }
+
+        #chatInput,
+        #chatSend {
+            font-size: 0.85rem;
+        }
+
+        /* Попап приветствия */
+        #welcomePopup {
+            width: 90%;
+            max-width: none;
+            left: 5%;
+            right: 5%;
+        }
+
+        /* Кнопки */
+        .btn {
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        /* Пагинация */
+        #pagination,
+        #paginationTop {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        #dianaBot {
+            width: 90%;
+            max-width: none;
+            right: 5%;
+        }
+    }
+
+    /* Планшеты */
+    @media (min-width: 641px) and (max-width: 1024px) {
+        #bookGrid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .book-card {
+            width: 100%;
+            padding: 0.75rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .filters-container {
+            display: none;
+        }
+    }
+}

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LibraryAI</title>
+
+    <!-- Tailwind (как в макете) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Подключаем Quagga -->
+    <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="min-h-screen flex flex-col bg-[#f6f8fb] font-inter">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm w-full">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl font-extrabold text-indigo-700 leading-none">📖</span>
+                <span class="text-lg font-semibold text-gray-800">LibraryAI</span>
+            </div>
+
+            <nav class="mt-3 md:mt-0 flex items-center space-x-3">
+		    	<a href="index.html"><button class="text-gray-700 hover:text-indigo-700 text-sm font-medium relative">🏠 Главная</button></a>
+                <button id="menuIsbn" class="text-gray-700 hover:text-indigo-700 text-sm font-medium relative">📖 ISBN</button>
+
+
+                <button id="recommendationsBtn" class="text-gray-700 hover:text-indigo-700 text-sm font-medium">⭐ Рекомендации</button>
+                <button id="favoritesBtnHeader" class="text-gray-700 hover:text-indigo-700 text-sm font-medium relative">❤️
+                    Избранное
+                    <span id="favCount" class="hidden absolute -top-2 -right-3 bg-indigo-600 text-white text-xs rounded-full px-2">0</span>
+                </button>
+                <button id="linksBtn" class="text-gray-700 hover:text-indigo-700 text-sm font-medium">
+                    🔗 Ссылки
+                </button>
+                
+                <div class="hidden md:flex items-center space-x-2">
+                    <!-- <button class="border border-gray-400 text-gray-800 rounded-md px-3 py-1 text-sm hover:bg-gray-100">Регистрация</button> -->
+                    <!-- <button class="border border-gray-400 text-gray-800 rounded-md px-3 py-1 text-sm hover:bg-gray-100">Войти</button>-->
+                </div>
+				
+				<div id="g_id_onload"
+     data-client_id="413467471427-fp3v1n73irvk8sncepirqqfl2ako454k.apps.googleusercontent.com"
+     data-context="signin"
+     data-ux_mode="popup"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false">
+</div>
+<div class="g_id_signin" data-type="standard"></div>
+            </nav>
+                <!-- Google Auth -->
+                <div id="googleAuthContainer" class="flex items-center space-x-3"></div>
+            
+        </div>
+    </header>
+	
+
+<!-- Попап аннотации Дианы -->
+<div id="dianaPopup" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+  <div class="bg-white p-5 rounded-2xl shadow-xl max-w-sm w-[90%] relative">
+    <button id="closeDianaPopup" class="absolute top-3 right-4 text-gray-500 text-2xl hover:text-gray-800">&times;</button>
+    <div class="flex items-center gap-3 mb-3">
+      <img src="dainaload.jpg" class="w-10 h-10 rounded-full border-2 border-indigo-500">
+      <h3 class="text-indigo-700 font-semibold">Диана пишет аннотацию</h3>
+    </div>
+    <p id="dianaContent" class="text-gray-800 text-sm leading-relaxed">...</p>
+  </div>
+</div>
+
+    <div id="linksPopup" class="hidden fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-start z-80 p-6 overflow-auto">
+        <button id="closeLinks" class="px-4 py-2 bg-indigo-600 rounded mb-4 text-white hover:bg-indigo-700">Закрыть</button>
+        <h2 class="text-xl font-semibold text-white mb-4">💾 Сохранённые ссылки</h2>
+        <ul id="savedLinks" class="w-full text-white list-disc pl-6"></ul>
+    </div>
+    <!-- Welcome -->
+    <section class="bg-white rounded-xl shadow-sm max-w-7xl mx-auto mt-6 p-6 w-full px-6">
+        <div class="flex flex-col md:flex-row items-center space-x-0 md:space-x-6">
+            <img src="dianaload.jpg" alt="avatar" id="welcomeAvatar" class="w-28 h-28 object-cover rounded-[20px] mb-4 md:mb-0">
+            <div>
+                <h1 class="text-lg font-semibold text-gray-800">Добро пожаловать в LibraryAI!</h1>
+                <p class="text-gray-600 text-sm mt-1 leading-relaxed">
+                    Здесь ты можешь <b>искать книги по авторам</b>, <b>добавлять любимые произведения в избранное</b>,
+                    и находить, где они доступны в <b>локальных библиотеках</b> твоего города.
+                    <br><br>
+                    А если понадобится помощь — тебе всегда готова помочь <b>ИИ-библиотекарь Диана</b>.
+                </p>
+            </div>
+        </div>
+    </section>
+<div id="isbnPopup" class="hidden fixed inset-0 z-50 bg-black bg-opacity-80 flex flex-col items-center justify-start p-2 overflow-hidden">
+  <div class="relative w-full h-full flex flex-col">
+    <!-- Кнопка закрытия -->
+    <button id="closeIsbnPopup" class="absolute top-2 right-3 text-white text-3xl font-bold z-50">&times;</button>
+
+    <!-- Видео сканера (только верхняя половина) -->
+    <div class="w-full h-1/2">
+      <video id="isbnVideo" autoplay playsinline class="w-full h-full bg-black rounded-lg"></video>
+    </div>
+
+    <!-- Кнопки управления (фиксированные под видео) -->
+    <div class="flex justify-around mt-2 w-full px-2">
+      <button id="scanISBNBtn" class="bg-indigo-500 text-white px-4 py-2 rounded-full flex-1 mx-1">Сканировать</button>
+      <button id="dianaAnnotationBtn" class="bg-green-500 text-white px-4 py-2 rounded-full flex-1 mx-1">Аннотация Дианы</button>
+    </div>
+
+    <!-- Результат книги -->
+    <div id="isbnResult" class="text-white mt-2 p-2 flex-1 overflow-y-auto w-full"></div>
+  </div>
+</div>
+    <!-- Search -->
+    <main class="max-w-7xl mx-auto mt-10 px-4 w-full">Заполняйте полное Ф.И.О автора или используйте автозаполнение при вводе.💡<br>
+        <div class="flex flex-col md:flex-row items-center gap-3">
+            <input id="authorInput" type="text" placeholder="Введите Ф.И.О, название книги или ISBN(10 или 13) " class="border border-gray-300 rounded-md px-4 py-2 w-full md:w-[32rem] focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <ul id="authorSuggestions" class="absolute left-0 right-0 bg-white border border-gray-300 rounded-md mt-1 z-50 hidden max-h-60 overflow-auto"></ul>
+
+            <div class="flex gap-2 w-full md:w-auto">
+
+
+
+                <button id="searchBtn" class="btn">Поиск</button>
+
+                <button id="clearBtn" class="btn bg-gray-300 text-gray-800 hover:bg-gray-400">Очистить</button>
+            </div>
+
+        </div>
+        <!--	<section id="topAuthors" class="p-4">
+  <h2 class="text-xl font-semibold mb-3 text-gray-800"><center>Популярные авторы и книги</center></h2>
+  <div id="authorGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center"></div>
+</section> -->
+        <div id="authorCard" class="hidden bg-indigo-50 rounded-lg shadow-md p-4 mt-4 flex items-start gap-4">
+        </div>
+
+        <div id="bookSummaryPopup" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg p-6 w-full max-w-lg relative">
+                <button id="closeSummary" class="absolute top-2 right-3 text-gray-500 hover:text-gray-900">✕</button>
+                <h2 id="summaryTitle" class="text-xl font-semibold mb-3"></h2>
+                <div id="summaryContent" class="text-gray-700 text-sm max-h-[60vh] overflow-y-auto">
+                    <p>Диана готовит сводку...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination (under search, as requested) -->
+        <div id="paginationTop" class="mt-4 flex justify-center items-center gap-2"></div>
+
+        <!-- Book grid -->
+        <section class="mt-6">
+            <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </section>
+
+        <!-- Pagination bottom -->
+        <div id="pagination" class="mt-6 flex justify-center items-center gap-2"></div>
+    </main>
+
+    <!-- Floating Diana bot -->
+    <!-- Кнопка вызова Дианы -->
+    <!--<button id="dianaBot" class="fixed bottom-6 right-6 bg-indigo-600 text-white rounded-full p-3 shadow-lg">💬</button>
+
+<!-- Окно чата -->
+    <div id="chatWindow" class="hidden fixed bottom-20 right-6 w-80 bg-indigo-100 rounded-2xl shadow-lg p-3">
+        <div id="chatLog" class="h-64 overflow-y-auto space-y-2 mb-2"></div>
+        <input id="chatInput" type="text" placeholder="Напишите Диане..." class="w-full border rounded px-2 py-1 text-sm mb-2">
+        <button id="sendBtn" class="w-full bg-white text-indigo-500 rounded py-1">Отправить</button>
+    </div>
+
+
+    <!-- Favorites popup -->
+    <div id="favoritesPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-md w-11/12">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Избранное</h3>
+                <button id="closeFavorites" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            <div id="favoritesList" class="space-y-3 max-h-64 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Recommendations popup -->
+    <div id="recommendationsPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-md w-11/12">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Рекомендации</h3>
+                <button id="closeRecommendations" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            <div id="recommendationsGrid" class="space-y-3 max-h-64 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Loading overlay with Diana avatar -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-60">
+        <div class="diana-loader mb-3"></div>
+        <div class="text-white text-lg font-medium">Загружаю...</div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 bg-white w-full border-t">
+        <div class="max-w-7xl mx-auto px-6 py-6 text-sm text-gray-600 flex flex-col md:flex-row justify-between items-center">
+            <div>© 2025 Амброзиев О.А.</div>
+            <div class="mt-2 md:mt-0">libraryai.ru &nbsp;<b>|</b>&nbsp;libraryai.store</a></div>
+        </div>
+    </footer>
+
+
+    <script src="script.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="script_patched_v17.js" defer></script>></script>
+    <!-- Попап ISBN -->
+    <!-- Кнопки меню -->
+    <!-- <button id="menuIsbn">Сканировать ISBN</button> -->
+    
+
+    <!-- Попап ISBN -->
+    
+
+    <script>
+// ======================
+// 🔹 Переменные и хранилище
+// ======================
+let stream;
+let currentBook = null; // текущая книга после сканирования
+
+// ======================
+// 📌 Попап ISBN
+// ======================
+document.getElementById("menuIsbn")?.addEventListener("click", () => {
+    const popup = document.getElementById("isbnPopup");
+    popup.classList.remove("hidden");
+    startCamera();
+});
+
+document.getElementById("closeIsbnPopup")?.addEventListener("click", () => {
+    stopCamera();
+    document.getElementById("isbnPopup").classList.add("hidden");
+});
+
+// ======================
+// 📸 Камера для ISBN
+// ======================
+async function startCamera() {
+    const video = document.getElementById("isbnVideo");
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+    } catch (err) {
+        console.error("Ошибка камеры:", err);
+        alert("Не удалось получить доступ к камере.");
+    }
+}
+
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+}
+
+// ======================
+// 🔍 Сканирование ISBN
+// ======================
+document.getElementById("scanISBNBtn")?.addEventListener("click", scanISBNFromVideo);
+
+async function scanISBNFromVideo() {
+    const video = document.getElementById("isbnVideo");
+    if (!video.videoWidth || !video.videoHeight) {
+        alert("Камера ещё не готова. Подождите...");
+        return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth / 2;
+    canvas.height = video.videoHeight / 2;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    Quagga.decodeSingle({
+        src: canvas.toDataURL(),
+        numOfWorkers: 0,
+        inputStream: { size: 800 },
+        decoder: { readers: ["ean_reader"] }
+    }, async function(result) {
+        if (result && result.codeResult) {
+            const isbn = result.codeResult.code;
+            document.getElementById("isbnResult").innerHTML = `ISBN: ${isbn}<br>Загружаем книгу...`;
+            await fetchBookInfo(isbn);
+        } else {
+            document.getElementById("isbnResult").innerText = "Не удалось распознать ISBN. Попробуйте снова.";
+        }
+    });
+}
+
+// ======================
+// 📘 Получение книги сначала Google Books
+// ======================
+async function fetchBookInfo(isbn) {
+    try {
+        const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&langRestrict=ru`);
+        const data = await res.json();
+        const item = data.items ? data.items[0] : null;
+
+        if (!item) {
+            document.getElementById("isbnResult").innerText = "Книга не найдена.";
+            currentBook = null;
+            return;
+        }
+
+        currentBook = {
+            title: item.volumeInfo.title || "Без названия",
+            authors: item.volumeInfo.authors ? item.volumeInfo.authors.slice(0, 2).join(", ") : "Неизвестный автор",
+            cover: item.volumeInfo.imageLinks ? (item.volumeInfo.imageLinks.thumbnail.replace(/^http:\/\//i, "https://")) : "https://via.placeholder.com/128x192?text=No+Cover",
+            description: item.volumeInfo.description || ""
+        };
+
+        renderBookResult(currentBook);
+    } catch (err) {
+        console.error("Ошибка получения книги:", err);
+        document.getElementById("isbnResult").innerText = "Ошибка при получении книги.";
+        currentBook = null;
+    }
+}
+
+// ======================
+// 🔹 Рендер результата книги с кнопками
+// ======================
+function renderBookResult(book) {
+    const result = document.getElementById("isbnResult");
+    result.innerHTML = "";
+
+    const card = document.createElement("div");
+    card.className = "book-result mb-2";
+    card.innerHTML = `
+        <img src="${book.cover}" alt="${book.title}" style="width:80px; height:120px; display:block; margin-bottom:4px;">
+        <strong>${book.title}</strong><br>${book.authors}<br>
+    `;
+
+    // Кнопки управления
+    const btnContainer = document.createElement("div");
+    btnContainer.className = "flex gap-2 mt-1";
+
+    const addFavBtn = document.createElement("button");
+    addFavBtn.textContent = "Добавить в избранное";
+    addFavBtn.className = "px-2 py-1 bg-indigo-500 text-white rounded";
+    addFavBtn.onclick = () => addBookToFavorites(book);
+
+    const annotationBtn = document.createElement("button");
+    annotationBtn.textContent = "Аннотация Дианы";
+    annotationBtn.className = "px-2 py-1 bg-green-500 text-white rounded";
+    annotationBtn.onclick = () => generateAnnotationWithQwen3(book);
+
+    btnContainer.appendChild(addFavBtn);
+    btnContainer.appendChild(annotationBtn);
+    card.appendChild(btnContainer);
+
+    result.appendChild(card);
+}
+
+// ======================
+// 💛 Избранное
+// ======================
+function addBookToFavorites(book) {
+    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    if (favorites.some(b => b.title === book.title && b.authors === book.authors)) {
+        alert("Книга уже в избранном!");
+        return;
+    }
+    favorites.push(book);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+    renderFavorites();
+}
+
+function renderFavorites() {
+    const popupList = document.getElementById("favoritesList");
+    const favCount = document.getElementById("favCount");
+    if (!popupList || !favCount) return;
+
+    const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+    popupList.innerHTML = "";
+
+    favorites.forEach(book => {
+        const popupDiv = document.createElement("div");
+        popupDiv.className = "favorite-book-popup flex items-center gap-2 mb-1";
+        popupDiv.innerHTML = `
+            <img src="${book.cover}" alt="${book.title}" style="width:40px; height:60px;">
+            <span><strong>${book.title}</strong> — ${book.authors}</span>
+        `;
+        popupList.appendChild(popupDiv);
+    });
+
+    favCount.textContent = favorites.length;
+    favCount.classList.toggle("hidden", favorites.length === 0);
+}
+
+// ======================
+// 📝 Аннотация Дианы через QWEN3
+// ======================
+async function generateAnnotationWithQwen3(book) {
+    const result = document.getElementById("isbnResult");
+    result.innerHTML += `<p>Диана генерирует аннотацию...</p>`;
+
+    try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer QWEN_API_KEY",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "qwen-3.0-mini",
+                messages: [
+                    { role: "user", content: `Напиши короткую аннотацию книги "${book.title}" на 4-5 предложений. Автор: ${book.authors}` }
+                ]
+            })
+        });
+        const data = await res.json();
+        const text = data?.choices?.[0]?.message?.content || "Аннотация не получена.";
+
+        result.innerHTML += `<p class="mt-2 bg-gray-800 text-white p-2 rounded">${text}</p>`;
+    } catch (err) {
+        console.error("Ошибка аннотации:", err);
+        result.innerHTML += `<p class="mt-2 text-red-500">Ошибка при создании аннотации.</p>`;
+    }
+}
+
+// ======================
+// 📅 Инициализация при загрузке
+// ======================
+document.addEventListener("DOMContentLoaded", () => {
+    renderFavorites();
+
+    // Попап избранного
+    document.getElementById("favoritesBtnHeader")?.addEventListener("click", () => {
+        document.getElementById("favoritesPopup")?.classList.remove("hidden");
+    });
+    document.getElementById("closeFavorites")?.addEventListener("click", () => {
+        document.getElementById("favoritesPopup")?.classList.add("hidden");
+    });
+});
+
+    </script>
+
+<div id="favoritesContainer"></div>
+<div id="favoritesList"></div>
+<span id="favCount" class="hidden">0</span>
+    <style>
+	
+	
+        #welcomeAvatar {
+            width: 112px;
+            /* размер как сейчас (28*4px) */
+            height: 112px;
+            border-radius: 50%;
+            /* делает кругом */
+            border: 4px solid #6c63ff;
+            /* фиолетовая обводка */
+            object-fit: cover;
+            /* чтобы картинка не искажалась */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .popup-inner {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 400px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .popup-inner button {
+            cursor: pointer;
+        }
+
+        .scan-btn {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: #6c63ff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+        }
+
+        @media(max-width:480px) {
+            .popup-inner {
+                width: 90%;
+                margin: 10px auto;
+                padding: 8px;
+            }
+
+            #isbnVideo {
+                width: 100%;
+                height: auto;
+            }
+
+            .scan-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
+
+
+
+
+    <!-- Попап сохранённых ссылок -->
+
+
+    <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+
+    <style>
+        /* Скрытие попапа */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Простейший стиль попапа */
+        #isbnPopup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .popup-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .controls {
+            margin-top: 5px;
+        }
+
+        .result-block {
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 200px;
+            min-height: 80px;
+            text-align: center;
+        }
+
+        #closeIsbnPopup {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+    <!-- ====================== -->
+    <!-- Попап ISBN -->
+
+   
+</body>
+
+</html>
